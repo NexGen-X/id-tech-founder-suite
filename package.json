@@ -1,0 +1,26 @@
+{
+  "name": "id-tech-founder-suite",
+  "version": "1.0.0",
+  "description": "Executive C-Level Cockpit, Real-Time MRR Financials & Platform Governance for ID-Tech Cloud",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "build": "npm run build -w server && npm run build -w client",
+    "start": "node server/dist/index.js"
+  },
+  "keywords": [
+    "founder-suite",
+    "executive-dashboard",
+    "finops",
+    "b2b-saas",
+    "id-tech"
+  ],
+  "author": "NexGen-X / PT NexGen Digital Nusantara",
+  "license": "MIT"
+}
