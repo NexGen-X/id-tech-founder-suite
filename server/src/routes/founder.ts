@@ -163,7 +163,8 @@ router.get('/users', async (req: Request, res: Response) => {
         w.task_quota_limit as "taskQuotaLimit",
         w.tasks_used_this_month as "tasksUsedThisMonth"
       FROM human_users u
-      LEFT JOIN workspaces w ON u.id = w.owner_user_id
+      LEFT JOIN workspace_members wm ON u.id = wm.user_id
+      LEFT JOIN workspaces w ON wm.workspace_id = w.id
     `;
 
     const conditions: string[] = [];
@@ -211,7 +212,7 @@ router.patch('/users/:userId/plan', async (req: Request, res: Response) => {
 
     const quota = taskQuotaLimit !== undefined ? Number(taskQuotaLimit) : (defaultLimits[plan.toUpperCase()] || 50);
 
-    const wsRes = await pool.query('SELECT id, name FROM workspaces WHERE owner_user_id = $1 LIMIT 1;', [userId]);
+    const wsRes = await pool.query('SELECT workspace_id as id FROM workspace_members WHERE user_id = $1 LIMIT 1;', [userId]);
     if (wsRes.rows.length === 0) {
       return res.status(404).json({ error: { message: 'Workspace untuk pengguna ini tidak ditemukan.' } });
     }
