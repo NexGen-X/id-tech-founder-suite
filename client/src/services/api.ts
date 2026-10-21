@@ -38,6 +38,7 @@ export const api = {
     return data;
   },
 
+  // Auth
   async login(email: string, password: string) {
     const res = await this.request('/api/auth/login', {
       method: 'POST',
@@ -61,6 +62,7 @@ export const api = {
     }
   },
 
+  // Executive Metrics & Financials
   async getMetrics() {
     return this.request('/api/founder/metrics');
   },
@@ -69,6 +71,34 @@ export const api = {
     return this.request('/api/founder/financials');
   },
 
+  // Tenant / Workspace Management
+  async getWorkspaces(params: { search?: string; plan?: string; status?: string } = {}) {
+    const query = new URLSearchParams();
+    if (params.search) query.set('search', params.search);
+    if (params.plan && params.plan !== 'ALL') query.set('plan', params.plan);
+    if (params.status && params.status !== 'ALL') query.set('status', params.status);
+    return this.request(`/api/founder/workspaces?${query.toString()}`);
+  },
+
+  async getWorkspaceDetails(workspaceId: string) {
+    return this.request(`/api/founder/workspaces/${workspaceId}`);
+  },
+
+  async createWorkspace(payload: { name: string; plan?: string; taskQuotaLimit?: number; ownerEmail?: string; ownerName?: string }) {
+    return this.request('/api/founder/workspaces', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  async updateWorkspace(workspaceId: string, payload: { plan?: string; taskQuotaLimit?: number; planStatus?: string; extendDays?: number }) {
+    return this.request(`/api/founder/workspaces/${workspaceId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  // User Directory & Access Control
   async getUsers(params: { search?: string; plan?: string } = {}) {
     const query = new URLSearchParams();
     if (params.search) query.set('search', params.search);
@@ -97,30 +127,77 @@ export const api = {
     });
   },
 
-  async getAuditLogs(limit: number = 50) {
-    return this.request(`/api/founder/audit-logs?limit=${limit}`);
+  // Invoices & Billing
+  async getInvoices(params: { status?: string; search?: string } = {}) {
+    const query = new URLSearchParams();
+    if (params.status && params.status !== 'ALL') query.set('status', params.status);
+    if (params.search) query.set('search', params.search);
+    return this.request(`/api/founder/invoices?${query.toString()}`);
+  },
+
+  async markInvoicePaid(invoiceId: string) {
+    return this.request(`/api/founder/invoices/${invoiceId}/mark-paid`, {
+      method: 'PATCH'
+    });
+  },
+
+  // AI Swarm Fleet & Telemetry
+  async getSwarmTelemetry() {
+    return this.request('/api/founder/swarm-telemetry');
+  },
+
+  // Audit Logs & System Health
+  async getAuditLogs(params: { limit?: number; search?: string } = {}) {
+    const query = new URLSearchParams();
+    query.set('limit', String(params.limit || 50));
+    if (params.search) query.set('search', params.search);
+    return this.request(`/api/founder/audit-logs?${query.toString()}`);
   },
 
   async getSystemHealth() {
     return this.request('/api/founder/system-health');
   },
 
+  // Broadcast & Governance
   async getBroadcast() {
     return this.request('/api/founder/broadcast');
   },
 
-  async setBroadcast(payload: { message: string; type?: 'info' | 'warning' | 'critical'; enabled?: boolean }) {
+  async setBroadcast(payload: { message: string; type?: 'info' | 'warning' | 'critical'; enabled?: boolean; targetAudience?: string }) {
     return this.request('/api/founder/broadcast', {
       method: 'POST',
       body: JSON.stringify(payload)
     });
   },
 
-  // Backward compatible aliases for FounderSuite
+  async getPlatformSettings() {
+    return this.request('/api/founder/platform-settings');
+  },
+
+  async updatePlatformSettings(payload: any) {
+    return this.request('/api/founder/platform-settings', {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  async emergencyRevokeSessions() {
+    return this.request('/api/founder/kill-switch/revoke-all-sessions', {
+      method: 'POST'
+    });
+  },
+
+  // Download Export CSV Helper
+  getExportUrl(type: 'users' | 'invoices' | 'workspaces' | 'audit-logs'): string {
+    const token = this.getToken();
+    return `/api/founder/export/${type}?auth_token=${token || ''}`;
+  },
+
+  // Backward compatible aliases
   getAdminMetrics() { return this.getMetrics(); },
   getAdminFinancials() { return this.getFinancials(); },
   getAdminUsers(params: any) { return this.getUsers(params); },
-  getAdminAuditLogs(limit?: number) { return this.getAuditLogs(limit); },
+  getAdminAuditLogs(limit?: number) { return this.getAuditLogs({ limit }); },
   getAdminSystemHealth() { return this.getSystemHealth(); },
   getAdminBroadcast() { return this.getBroadcast(); },
   setAdminBroadcast(payload: any) { return this.setBroadcast(payload); }
