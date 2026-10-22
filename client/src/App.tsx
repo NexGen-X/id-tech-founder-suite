@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { api } from './services/api';
 import { FounderLoginPage } from './features/auth/FounderLoginPage';
 import { FounderSuite } from './features/founder/FounderSuite';
+import { ThemeProvider } from './context/ThemeContext';
 
-export const App: React.FC = () => {
+export const AppContent: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
@@ -52,12 +53,12 @@ export const App: React.FC = () => {
 
   if (isCheckingAuth) {
     return (
-      <div className="min-h-screen bg-[#07090E] flex flex-col items-center justify-center text-amber-400 font-sans">
-        <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/20 mb-4 animate-pulse">
-          <div className="w-6 h-6 border-2 border-amber-500/30 border-t-amber-400 rounded-full animate-spin" />
+      <div className="min-h-screen bg-neutral-950 dark:bg-[#000000] flex flex-col items-center justify-center text-neutral-400 font-sans">
+        <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center shadow-lg mb-3">
+          <div className="w-5 h-5 border-2 border-neutral-700 border-t-white rounded-full animate-spin" />
         </div>
-        <p className="text-xs font-mono text-amber-400 tracking-widest uppercase animate-pulse">
-          Memverifikasi Kredensial Founder...
+        <p className="text-xs font-mono text-neutral-400 tracking-wider uppercase animate-pulse">
+          Verifying Founder Clearance...
         </p>
       </div>
     );
@@ -76,5 +77,13 @@ export const App: React.FC = () => {
       currentUser={currentUser}
       onExit={handleLogout}
     />
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 };
