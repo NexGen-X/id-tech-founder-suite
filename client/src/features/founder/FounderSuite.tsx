@@ -492,9 +492,12 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
         { type: 'nav', id: 'governance', label: 'Platform Governance & Kill Switch', icon: ShieldCheck },
         { type: 'theme', id: 'theme-dark', label: 'Tema: Aktifkan Mode Gelap (Dark Mode)', icon: Moon },
         { type: 'theme', id: 'theme-light', label: 'Tema: Aktifkan Mode Terang (Light Mode)', icon: Sun },
+        { type: 'theme', id: 'theme-charcoal', label: 'Aksen: Obsidian Dark Charcoal Gray', icon: Palette },
         { type: 'theme', id: 'theme-emerald', label: 'Aksen: Railway Emerald Mint', icon: Palette },
+        { type: 'theme', id: 'theme-monochrome', label: 'Aksen: Vercel Titanium Monochrome', icon: Palette },
         { type: 'theme', id: 'theme-amber', label: 'Aksen: Supabase Sunset Gold', icon: Palette },
         { type: 'theme', id: 'theme-violet', label: 'Aksen: Linear Deep Violet', icon: Palette },
+        { type: 'theme', id: 'theme-cyan', label: 'Aksen: Azure Ocean Cyan', icon: Palette },
         { type: 'action', id: 'action-new-ws', label: '+ Provisi Workspace Baru', icon: Plus },
         { type: 'action', id: 'action-export-soc2', label: 'Unduh SOC2 Audit Trail CSV', icon: Download },
         { type: 'action', id: 'action-emergency', label: 'Eksekusi Protokol Darurat Kill-Switch', icon: ShieldAlert }
@@ -571,6 +574,7 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
       if (item.id === 'theme-dark') setThemeMode('dark');
       else if (item.id === 'theme-light') setThemeMode('light');
       else if (item.id === 'theme-system') setThemeMode('system');
+      else if (item.id === 'theme-charcoal') setAccentColor('charcoal');
       else if (item.id === 'theme-emerald') setAccentColor('emerald');
       else if (item.id === 'theme-monochrome') setAccentColor('monochrome');
       else if (item.id === 'theme-amber') setAccentColor('amber');

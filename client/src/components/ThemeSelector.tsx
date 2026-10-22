@@ -108,7 +108,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ compact = false, c
               <span className="text-[10px] font-mono text-neutral-400">{accent.label}</span>
             </div>
 
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-6 gap-1.5">
               {(Object.keys(ACCENT_THEMES) as AccentColor[]).map((key) => {
                 const conf = ACCENT_THEMES[key];
                 const isSelected = accentColor === key;
@@ -117,7 +117,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ compact = false, c
                     key={key}
                     onClick={() => setAccentColor(key)}
                     title={`${conf.name} (${conf.label})`}
-                    className={`group relative h-9 rounded-xl flex items-center justify-center transition border ${
+                    className={`group relative h-8 rounded-xl flex items-center justify-center transition border ${
                       isSelected
                         ? 'border-neutral-900 dark:border-white ring-2 ring-neutral-400/30'
                         : 'border-transparent hover:border-neutral-300 dark:hover:border-neutral-700'
@@ -125,7 +125,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ compact = false, c
                     style={{ backgroundColor: conf.hex }}
                   >
                     {isSelected && (
-                      <Check className={`w-4 h-4 ${key === 'monochrome' ? 'text-black' : 'text-white'} drop-shadow`} />
+                      <Check className={`w-3.5 h-3.5 ${key === 'monochrome' ? 'text-black' : 'text-white'} drop-shadow`} />
                     )}
                   </button>
                 );
