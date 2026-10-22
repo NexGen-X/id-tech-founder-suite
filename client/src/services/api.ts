@@ -207,6 +207,77 @@ export const api = {
     return this.request('/api/founder/deployments');
   },
 
+  // Enterprise Custom Domains & Caddy SSL Gateway
+  async getDomains() {
+    return this.request('/api/founder/domains');
+  },
+
+  async getCaddyStatus() {
+    return this.request('/api/founder/domains/caddy-status');
+  },
+
+  async addDomain(payload: { workspaceId: string; domainName: string; isPrimary?: boolean; useInternalTls?: boolean }) {
+    return this.request('/api/founder/domains', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  async verifyDomainDns(domainId: string) {
+    return this.request(`/api/founder/domains/${domainId}/verify-dns`, {
+      method: 'POST'
+    });
+  },
+
+  async checkDomainSsl(domainId: string) {
+    return this.request(`/api/founder/domains/${domainId}/check-ssl`, {
+      method: 'POST'
+    });
+  },
+
+  async removeDomain(domainId: string) {
+    return this.request(`/api/founder/domains/${domainId}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // Autonomous SRE & VPS Host Supervisor
+  async getSreServices() {
+    return this.request('/api/founder/sre/services');
+  },
+
+  async getSreHostMetrics() {
+    return this.request('/api/founder/sre/host-metrics');
+  },
+
+  async getSreServiceLogs(serviceName: string, lines: number = 50) {
+    return this.request(`/api/founder/sre/services/${serviceName}/logs?lines=${lines}`);
+  },
+
+  async restartSreService(serviceName: string) {
+    return this.request(`/api/founder/sre/services/${serviceName}/restart`, {
+      method: 'POST'
+    });
+  },
+
+  async purgeSreTemp() {
+    return this.request('/api/founder/sre/heal/purge-temp', {
+      method: 'POST'
+    });
+  },
+
+  async vacuumSreDb() {
+    return this.request('/api/founder/sre/heal/vacuum-db', {
+      method: 'POST'
+    });
+  },
+
+  async reapSreZombies() {
+    return this.request('/api/founder/sre/heal/reap-zombies', {
+      method: 'POST'
+    });
+  },
+
   // Download Export CSV Helper
   getExportUrl(type: 'users' | 'invoices' | 'workspaces' | 'audit-logs'): string {
     const token = this.getToken();

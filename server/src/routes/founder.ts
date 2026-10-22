@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { pool } from '../db.js';
 import { requireFounderAuth, hashPassword, recordSecurityAudit, verifyFounderMasterPin } from '../auth.js';
 import { sensitiveOpsRateLimiter } from '../middleware/rateLimiter.js';
+import { FounderDomainService } from '../services/founderDomainService.js';
+import { FounderSreService } from '../services/founderSreService.js';
 
 const router = Router();
 
@@ -1209,6 +1211,265 @@ router.get('/deployments', async (_req: Request, res: Response) => {
       activeInstances: 3,
       globalSLA: '99.98%'
     });
+  } catch (err: any) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// ==========================================
+// 10. ENTERPRISE CUSTOM DOMAINS & CADDY SSL
+// ==========================================
+
+// GET /api/founder/domains
+router.get('/domains', async (_req: Request, res: Response) => {
+  try {
+    const domains = await FounderDomainService.listDomains();
+    const caddyStatus = await FounderDomainService.getCaddyStatus();
+    res.json({ success: true, domains, caddyStatus });
+  } catch (err: any) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// GET /api/founder/domains/caddy-status
+router.get('/domains/caddy-status', async (_req: Request, res: Response) => {
+  try {
+    const status = await FounderDomainService.getCaddyStatus();
+    res.json({ success: true, status });
+  } catch (err: any) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// POST /api/founder/domains
+router.post('/domains', sensitiveOpsRateLimiter, async (req: Request, res: Response) => {
+  try {
+    const { workspaceId, domainName, isPrimary, useInternalTls } = req.body;
+    if (!workspaceId || !domainName) {
+      return res.status(400).json({ error: { message: 'Workspace ID dan nama domain wajib diisi.' } });
+    }
+
+    const domain = await FounderDomainService.addDomain({
+      workspaceId,
+      domainName,
+      isPrimary: Boolean(isPrimary),
+      useInternalTls: Boolean(useInternalTls)
+    });
+
+    await recordSecurityAudit({
+      actorType: 'FOUNDER',
+      actorName: (req as any).user?.displayName || 'Founder SuperAdmin',
+      eventType: 'domain.provisioned',
+      summary: `Domain korporat ${domain.domainName} berhasil dialokasikan untuk workspace ${workspaceId} dengan Caddy Edge SSL.`,
+      targetType: 'DOMAIN',
+      targetId: domain.id,
+      workspaceId
+    });
+
+    res.status(201).json({ success: true, domain, message: `Domain ${domain.domainName} berhasil diprovisi.` });
+  } catch (err: any) {
+    res.status(400).json({ error: { message: err.message } });
+  }
+});
+
+// POST /api/founder/domains/:domainId/verify-dns
+router.post('/domains/:domainId/verify-dns', async (req: Request, res: Response) => {
+  try {
+    const { domainId } = req.params;
+    const domRes = await pool.query('SELECT id, domain_name FROM custom_domains WHERE id = $1;', [domainId]);
+    if (domRes.rows.length === 0) {
+      return res.status(404).json({ error: { message: 'Domain tidak ditemukan.' } });
+    }
+
+    const domainName = domRes.rows[0].domain_name;
+    const dnsResult = await FounderDomainService.verifyDns(domainName);
+
+    const newStatus = dnsResult.matches ? 'ACTIVE' : 'PENDING_DNS';
+    const newSslStatus = dnsResult.matches ? 'PROVISIONED' : 'PENDING';
+    const detectedIp = dnsResult.detectedIps[0] || null;
+
+    await pool.query(`
+      UPDATE custom_domains 
+      SET 
+        status = $1, 
+        ssl_status = $2, 
+        detected_ip = $3, 
+        last_checked_at = CURRENT_TIMESTAMP, 
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $4;
+    `, [newStatus, newSslStatus, detectedIp, domainId]);
+
+    res.json({
+      success: true,
+      dns: dnsResult,
+      status: newStatus,
+      sslStatus: newSslStatus,
+      message: dnsResult.message
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// POST /api/founder/domains/:domainId/check-ssl
+router.post('/domains/:domainId/check-ssl', async (req: Request, res: Response) => {
+  try {
+    const { domainId } = req.params;
+    const domRes = await pool.query('SELECT id, domain_name FROM custom_domains WHERE id = $1;', [domainId]);
+    if (domRes.rows.length === 0) {
+      return res.status(404).json({ error: { message: 'Domain tidak ditemukan.' } });
+    }
+
+    const domainName = domRes.rows[0].domain_name;
+    const sslResult = await FounderDomainService.checkSslCertificate(domainName);
+
+    const sslStatus = sslResult.valid ? 'PROVISIONED' : 'FAILED';
+    await pool.query(`
+      UPDATE custom_domains 
+      SET ssl_status = $1, last_checked_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = $2;
+    `, [sslStatus, domainId]);
+
+    res.json({
+      success: true,
+      ssl: sslResult,
+      sslStatus,
+      message: sslResult.valid
+        ? `Sertifikat SSL valid (Issuer: ${sslResult.issuer}, sisa ${sslResult.daysRemaining} hari).`
+        : `Pengecekan SSL belum valid: ${sslResult.error || 'Periksa propagasi DNS.'}`
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// DELETE /api/founder/domains/:domainId
+router.delete('/domains/:domainId', sensitiveOpsRateLimiter, async (req: Request, res: Response) => {
+  try {
+    const { domainId } = req.params;
+    const removed = await FounderDomainService.removeDomain(domainId);
+
+    await recordSecurityAudit({
+      actorType: 'FOUNDER',
+      actorName: (req as any).user?.displayName || 'Founder SuperAdmin',
+      eventType: 'domain.revoked',
+      summary: `Domain korporat ${removed.domainName} (${domainId}) dicabut dari konfigurasi Caddy dan dinonaktifkan.`,
+      targetType: 'DOMAIN',
+      targetId: domainId
+    });
+
+    res.json({ success: true, message: `Domain ${removed.domainName} berhasil dicabut dari sistem.` });
+  } catch (err: any) {
+    res.status(400).json({ error: { message: err.message } });
+  }
+});
+
+// ==========================================
+// 11. AUTONOMOUS SRE & VPS HOST SUPERVISOR
+// ==========================================
+
+// GET /api/founder/sre/services
+router.get('/sre/services', async (_req: Request, res: Response) => {
+  try {
+    const services = await FounderSreService.getServicesStatus();
+    res.json({ success: true, services });
+  } catch (err: any) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// GET /api/founder/sre/host-metrics
+router.get('/sre/host-metrics', async (_req: Request, res: Response) => {
+  try {
+    const metrics = await FounderSreService.getHostMetrics();
+    res.json({ success: true, metrics });
+  } catch (err: any) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// GET /api/founder/sre/services/:serviceName/logs
+router.get('/sre/services/:serviceName/logs', async (req: Request, res: Response) => {
+  try {
+    const { serviceName } = req.params;
+    const lines = parseInt(req.query.lines as string || '50', 10);
+    const logs = await FounderSreService.getServiceLogs(serviceName, lines);
+    res.json({ success: true, serviceName, logs });
+  } catch (err: any) {
+    res.status(400).json({ error: { message: err.message } });
+  }
+});
+
+// POST /api/founder/sre/services/:serviceName/restart
+router.post('/sre/services/:serviceName/restart', sensitiveOpsRateLimiter, async (req: Request, res: Response) => {
+  try {
+    const { serviceName } = req.params;
+    const result = await FounderSreService.restartService(serviceName);
+
+    await recordSecurityAudit({
+      actorType: 'FOUNDER',
+      actorName: (req as any).user?.displayName || 'Founder SuperAdmin',
+      eventType: 'sre.service_restart',
+      summary: `Founder mengeksekusi restart pada layanan VPS: ${serviceName}.`,
+      targetType: 'SYSTEM_SERVICE',
+      targetId: serviceName
+    });
+
+    res.json(result);
+  } catch (err: any) {
+    res.status(400).json({ error: { message: err.message } });
+  }
+});
+
+// POST /api/founder/sre/heal/purge-temp
+router.post('/sre/heal/purge-temp', sensitiveOpsRateLimiter, async (req: Request, res: Response) => {
+  try {
+    const result = await FounderSreService.purgeTempSandboxes();
+
+    await recordSecurityAudit({
+      actorType: 'FOUNDER',
+      actorName: (req as any).user?.displayName || 'Founder SuperAdmin',
+      eventType: 'sre.self_heal_temp_purged',
+      summary: `Prosedur Self-Healing: Pembersihan direktori sandbox temporary dieksekusi.`
+    });
+
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// POST /api/founder/sre/heal/vacuum-db
+router.post('/sre/heal/vacuum-db', sensitiveOpsRateLimiter, async (req: Request, res: Response) => {
+  try {
+    const result = await FounderSreService.vacuumPostgres();
+
+    await recordSecurityAudit({
+      actorType: 'FOUNDER',
+      actorName: (req as any).user?.displayName || 'Founder SuperAdmin',
+      eventType: 'sre.self_heal_db_vacuum',
+      summary: `Prosedur Self-Healing: PostgreSQL VACUUM ANALYZE dijalankan (${result.durationMs}ms).`
+    });
+
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// POST /api/founder/sre/heal/reap-zombies
+router.post('/sre/heal/reap-zombies', sensitiveOpsRateLimiter, async (req: Request, res: Response) => {
+  try {
+    const result = await FounderSreService.reapZombieWorkers();
+
+    await recordSecurityAudit({
+      actorType: 'FOUNDER',
+      actorName: (req as any).user?.displayName || 'Founder SuperAdmin',
+      eventType: 'sre.self_heal_zombies_reaped',
+      summary: `Prosedur Self-Healing: ${result.reapedCount} worker proses zombie dihentikan.`
+    });
+
+    res.json(result);
   } catch (err: any) {
     res.status(500).json({ error: { message: err.message } });
   }

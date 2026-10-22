@@ -52,10 +52,14 @@ import { api } from '../../services/api.js';
 import { useTheme, ACCENT_THEMES, ThemeMode, AccentColor } from '../../context/ThemeContext.js';
 import { useResponsive } from '../../hooks/useResponsive.js';
 import { ThemeSelector } from '../../components/ThemeSelector.js';
+import { CustomDomainsTab } from './tabs/CustomDomainsTab.js';
+import { SreSupervisorTab } from './tabs/SreSupervisorTab.js';
 
 type SuiteTab = 
   | 'cockpit' 
   | 'tenants' 
+  | 'domains'
+  | 'sre'
   | 'users' 
   | 'billing' 
   | 'swarm' 
@@ -477,6 +481,8 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
       return [
         { type: 'nav', id: 'cockpit', label: 'Overview Cockpit', icon: TrendingUp },
         { type: 'nav', id: 'tenants', label: 'Workspaces Matrix', icon: Building2 },
+        { type: 'nav', id: 'domains', label: 'Enterprise Custom Domains & Edge SSL', icon: Globe },
+        { type: 'nav', id: 'sre', label: 'Autonomous SRE & VPS Host Supervisor', icon: Activity },
         { type: 'nav', id: 'users', label: 'Users & RBAC Directory', icon: Users },
         { type: 'nav', id: 'billing', label: 'Billing & Invoices', icon: DollarSign },
         { type: 'nav', id: 'swarm', label: 'AI Swarm Fleet & Daemons', icon: Cpu },
@@ -501,6 +507,8 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
     const navs = [
       { id: 'cockpit', label: 'Overview Cockpit', icon: TrendingUp },
       { id: 'tenants', label: 'Workspaces Matrix', icon: Building2 },
+      { id: 'domains', label: 'Enterprise Custom Domains & Edge SSL', icon: Globe },
+      { id: 'sre', label: 'Autonomous SRE & VPS Host Supervisor', icon: Activity },
       { id: 'users', label: 'Users & RBAC Directory', icon: Users },
       { id: 'billing', label: 'Billing & Invoices', icon: DollarSign },
       { id: 'swarm', label: 'AI Swarm Fleet & Daemons', icon: Cpu },
@@ -591,13 +599,15 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
   const navTabs: { id: SuiteTab; label: string; badge?: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'cockpit', label: 'Overview', icon: TrendingUp },
     { id: 'tenants', label: 'Workspaces', badge: `${workspaces.length}`, icon: Building2 },
+    { id: 'domains', label: 'Custom Domains', badge: 'Caddy SSL', icon: Globe },
+    { id: 'sre', label: 'VPS & SRE Supervisor', badge: '5 Online', icon: Activity },
     { id: 'users', label: 'Users & RBAC', badge: `${users.length}`, icon: Users },
     { id: 'billing', label: 'Billing & Invoices', badge: `${invoices.length}`, icon: DollarSign },
     { id: 'swarm', label: 'AI Swarm', badge: '7 Nodes', icon: Cpu },
     { id: 'database', label: 'Postgres Engine', badge: '100% Cache', icon: Database },
     { id: 'deployments', label: 'Deployments & Git', badge: '3 Ready', icon: Server },
-    { id: 'audit', label: 'Audit Trail', badge: 'SOC2', icon: Activity },
-    { id: 'governance', label: 'Governance & Security', icon: ShieldCheck }
+    { id: 'audit', label: 'Audit Trail', badge: 'SOC2', icon: ShieldCheck },
+    { id: 'governance', label: 'Governance & Security', icon: Lock }
   ];
 
   return (
@@ -1200,7 +1210,32 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
         )}
 
         {/* ========================================================= */}
-        {/* TAB 3: USERS & RBAC DIRECTORY */}
+        {/* TAB 3: ENTERPRISE CUSTOM DOMAINS & CADDY SSL */}
+        {/* ========================================================= */}
+        {activeTab === 'domains' && (
+          <CustomDomainsTab
+            workspaces={workspaces}
+            accent={accent}
+            showToast={showToast}
+            copyToClipboard={copyToClipboard}
+            copiedId={copiedId}
+          />
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 4: AUTONOMOUS SRE & VPS HOST SUPERVISOR */}
+        {/* ========================================================= */}
+        {activeTab === 'sre' && (
+          <SreSupervisorTab
+            accent={accent}
+            showToast={showToast}
+            copyToClipboard={copyToClipboard}
+            copiedId={copiedId}
+          />
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 5: USERS & RBAC DIRECTORY */}
         {/* ========================================================= */}
         {activeTab === 'users' && (
           <div className="space-y-6 animate-fadeIn">
