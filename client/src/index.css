@@ -1,6 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-titanium-950: #07090E;
+  --color-titanium-900: #0B0E14;
+  --color-titanium-800: #141822;
+  --color-titanium-700: #1F2533;
+}
 
 :root {
   --bg-primary: #000000;
