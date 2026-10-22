@@ -32,7 +32,8 @@ import {
   X,
   Sliders,
   Database,
-  Cpu
+  Cpu,
+  ShieldAlert
 } from 'lucide-react';
 import { api } from '../../services/api.js';
 
@@ -97,7 +98,12 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
 
   const [resettingUser, setResettingUser] = useState<any | null>(null);
   const [tempPassword, setTempPassword] = useState('IdTech2026!');
+  const [resetPin, setResetPin] = useState('');
   const [resettingPwd, setResettingPwd] = useState(false);
+
+  const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
+  const [emergencyPin, setEmergencyPin] = useState('');
+  const [revokingSessions, setRevokingSessions] = useState(false);
 
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
   const [settlingInvoice, setSettlingInvoice] = useState(false);
@@ -276,11 +282,16 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
   // Actions: Reset Password
   const handleExecuteResetPassword = async () => {
     if (!resettingUser) return;
+    if (!resetPin.trim()) {
+      showToast('Master Security PIN 6-digit wajib diisi.');
+      return;
+    }
     setResettingPwd(true);
     try {
-      const res = await api.resetUserPassword(resettingUser.id, tempPassword);
+      const res = await api.resetUserPassword(resettingUser.id, tempPassword, resetPin.trim());
       showToast(res.message || 'Kata sandi berhasil direset.');
       setResettingUser(null);
+      setResetPin('');
       loadAllData(true);
     } catch (err: any) {
       showToast(`Gagal reset sandi: ${err.message}`);
@@ -323,14 +334,22 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
   };
 
   // Actions: Emergency Kill-Switch
-  const handleEmergencyRevokeSessions = async () => {
-    if (!confirm('PERINGATAN PROTOKOL DARURAT: Anda yakin ingin mencabut seluruh sesi aktif operator non-founder sekarang?')) return;
+  const handleExecuteEmergencyRevoke = async () => {
+    if (!emergencyPin.trim()) {
+      showToast('Master Security PIN wajib diisi untuk otorisasi kill-switch.');
+      return;
+    }
+    setRevokingSessions(true);
     try {
-      const res = await api.emergencyRevokeSessions();
+      const res = await api.emergencyRevokeSessions(emergencyPin.trim());
       showToast(res.message || 'Seluruh sesi non-founder berhasil dicabut.');
+      setIsEmergencyModalOpen(false);
+      setEmergencyPin('');
       loadAllData(true);
     } catch (err: any) {
       showToast(`Gagal eksekusi: ${err.message}`);
+    } finally {
+      setRevokingSessions(false);
     }
   };
 
@@ -1344,7 +1363,7 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
                     Segera membatalkan semua token sesi login operator di database jika terdeteksi aktivitas anomali atau intrusi.
                   </p>
                   <button
-                    onClick={handleEmergencyRevokeSessions}
+                    onClick={() => setIsEmergencyModalOpen(true)}
                     className="px-3.5 py-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 text-xs font-bold transition shadow-sm mt-2"
                   >
                     Eksekusi Cabut Sesi
@@ -1670,21 +1689,103 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
                   </button>
                 </div>
               </div>
+
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center justify-between">
+                  <label className="font-semibold text-slate-300">Master Security PIN (Step-Up 2FA):</label>
+                  <span className="text-[10px] text-amber-400 font-mono">6-Digit PIN</span>
+                </div>
+                <input
+                  type="password"
+                  maxLength={6}
+                  value={resetPin}
+                  onChange={e => setResetPin(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Ketik 6-digit PIN (default 992817)"
+                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-amber-500/30 text-amber-300 font-mono text-xs tracking-widest placeholder:tracking-normal placeholder:text-slate-500"
+                />
+                <p className="text-[10px] text-slate-500">
+                  Diperlukan untuk otorisasi penimpaan kredensial keamanan operator secara zero-trust.
+                </p>
+              </div>
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
               <button
-                onClick={() => setResettingUser(null)}
+                onClick={() => { setResettingUser(null); setResetPin(''); }}
                 className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-slate-300 text-xs font-semibold"
               >
                 Batal
               </button>
               <button
                 onClick={handleExecuteResetPassword}
-                disabled={resettingPwd}
+                disabled={resettingPwd || !resetPin.trim()}
                 className="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md disabled:opacity-50"
               >
                 {resettingPwd ? 'Mereset...' : 'Terapkan Reset Sandi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL: EMERGENCY KILL-SWITCH SESSIONS REVOCATION */}
+      {/* ========================================================= */}
+      {isEmergencyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="w-full max-w-md rounded-2xl bg-[#0E1522] border border-red-500/60 p-6 space-y-5 shadow-[0_0_40px_rgba(239,68,68,0.25)]">
+            <div className="flex items-center justify-between border-b border-red-500/20 pb-3">
+              <div className="flex items-center gap-2 text-red-400">
+                <ShieldAlert className="w-5 h-5 animate-pulse" />
+                <h3 className="font-bold text-sm text-white">Protokol Keamanan Darurat: Kill-Switch</h3>
+              </div>
+              <button onClick={() => { setIsEmergencyModalOpen(false); setEmergencyPin(''); }} className="text-slate-400 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-200 text-xs leading-relaxed">
+                <strong className="block text-red-400 font-bold mb-1">PERINGATAN LEVEL EKSEKUTIF:</strong>
+                Tindakan ini akan langsung menghapus seluruh session token operator non-founder dari database PostgreSQL shared cluster. Seluruh koneksi operator aktif akan terputus seketika.
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-300">Master Security PIN (Step-Up 2FA):</label>
+                <input
+                  type="password"
+                  maxLength={6}
+                  value={emergencyPin}
+                  onChange={e => setEmergencyPin(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Ketik 6-digit Master PIN (default: 992817)"
+                  className="w-full p-2.5 rounded-xl bg-slate-900 border border-red-500/40 text-red-300 font-mono text-xs tracking-widest placeholder:tracking-normal placeholder:text-slate-500 focus:outline-none focus:border-red-400"
+                />
+                <p className="text-[10px] text-slate-500">
+                  Masukkan Master Security PIN Founder untuk mengesahkan pemutusan darurat.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <button
+                onClick={() => { setIsEmergencyModalOpen(false); setEmergencyPin(''); }}
+                className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-slate-300 text-xs font-semibold hover:bg-slate-800"
+              >
+                Batalkan
+              </button>
+              <button
+                onClick={handleExecuteEmergencyRevoke}
+                disabled={revokingSessions || !emergencyPin.trim()}
+                className="px-4 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg disabled:opacity-50 flex items-center gap-2"
+              >
+                {revokingSessions ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Mencabut Sesi...</span>
+                  </>
+                ) : (
+                  <span>Konfirmasi & Eksekusi Kill-Switch</span>
+                )}
               </button>
             </div>
           </div>

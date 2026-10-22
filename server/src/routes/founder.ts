@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { pool } from '../db.js';
-import { requireFounderAuth, hashPassword } from '../auth.js';
+import { requireFounderAuth, hashPassword, recordSecurityAudit, verifyFounderMasterPin } from '../auth.js';
+import { sensitiveOpsRateLimiter } from '../middleware/rateLimiter.js';
 
 const router = Router();
 
@@ -528,7 +529,7 @@ router.patch('/users/:userId/plan', async (req: Request, res: Response) => {
 });
 
 // PATCH /api/founder/users/:userId/role
-router.patch('/users/:userId/role', async (req: Request, res: Response) => {
+router.patch('/users/:userId/role', sensitiveOpsRateLimiter, async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const { role } = req.body;
@@ -538,17 +539,46 @@ router.patch('/users/:userId/role', async (req: Request, res: Response) => {
     }
 
     await pool.query('UPDATE human_users SET role = $1 WHERE id = $2;', [role.toUpperCase(), userId]);
+
+    await recordSecurityAudit({
+      actorType: 'FOUNDER',
+      actorName: (req as any).user?.displayName || 'Founder SuperAdmin',
+      eventType: 'user.role_changed',
+      summary: `Peran pengguna ${userId} diubah menjadi ${role.toUpperCase()}.`,
+      targetType: 'USER',
+      targetId: userId
+    });
+
     res.json({ success: true, message: `Peran pengguna berhasil diubah ke ${role.toUpperCase()}.` });
   } catch (err: any) {
-    res.status(500).json({ error: { message: err.message } });
+    res.status(500).json({ error: { message: 'Gagal memperbarui peran pengguna.' } });
   }
 });
 
 // POST /api/founder/users/:userId/reset-password
-router.post('/users/:userId/reset-password', async (req: Request, res: Response) => {
+router.post('/users/:userId/reset-password', sensitiveOpsRateLimiter, async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const { newPassword } = req.body;
+    const candidatePin = req.headers['x-founder-pin'] || req.body?.founderPin;
+
+    if (!candidatePin || !verifyFounderMasterPin(String(candidatePin))) {
+      await recordSecurityAudit({
+        actorType: 'SECURITY',
+        actorName: (req as any).user?.displayName || 'Founder SuperAdmin',
+        eventType: 'auth.pin_rejected',
+        summary: `Percobaan reset password pengguna ${userId} ditolak: Master Security PIN salah atau belum diisi dari IP ${(req.ip || 'unknown')}.`
+      });
+      return res.status(403).json({
+        error: { message: 'Master Security PIN (6-digit) diperlukan dan harus valid untuk mereset kata sandi operator.' }
+      });
+    }
+
+    const userRes = await pool.query('SELECT id, email, display_name FROM human_users WHERE id = $1;', [userId]);
+    if (userRes.rows.length === 0) {
+      return res.status(404).json({ error: { message: 'Pengguna tidak ditemukan.' } });
+    }
+    const targetUser = userRes.rows[0];
 
     const tempPassword = newPassword && newPassword.trim().length >= 8
       ? newPassword.trim()
@@ -565,13 +595,22 @@ router.post('/users/:userId/reset-password', async (req: Request, res: Response)
       WHERE id = $2;
     `, [newHash, userId]);
 
+    await recordSecurityAudit({
+      actorType: 'FOUNDER',
+      actorName: (req as any).user?.displayName || 'Founder SuperAdmin',
+      eventType: 'auth.password_reset',
+      summary: `Founder mereset kata sandi pengguna ${targetUser.email} (${targetUser.id}) dan mencabut sesi login aktifnya.`,
+      targetType: 'USER',
+      targetId: userId
+    });
+
     res.json({
       success: true,
       message: 'Kata sandi berhasil direset. Sesi pengguna sebelumnya telah dicabut demi keamanan.',
       temporaryPassword: tempPassword
     });
   } catch (err: any) {
-    res.status(500).json({ error: { message: err.message } });
+    res.status(500).json({ error: { message: 'Gagal mereset kata sandi pengguna.' } });
   }
 });
 
@@ -644,10 +683,10 @@ router.get('/invoices', async (req: Request, res: Response) => {
 });
 
 // PATCH /api/founder/invoices/:invoiceId/mark-paid
-router.patch('/invoices/:invoiceId/mark-paid', async (req: Request, res: Response) => {
+router.patch('/invoices/:invoiceId/mark-paid', sensitiveOpsRateLimiter, async (req: Request, res: Response) => {
   try {
     const { invoiceId } = req.params;
-    const invRes = await pool.query('SELECT id, workspace_id, plan, amount_idr, status FROM workspace_invoices WHERE id = $1;', [invoiceId]);
+    const invRes = await pool.query('SELECT id, workspace_id, invoice_number, plan, amount_idr, status FROM workspace_invoices WHERE id = $1;', [invoiceId]);
     if (invRes.rows.length === 0) {
       return res.status(404).json({ error: { message: 'Faktur tidak ditemukan.' } });
     }
@@ -677,12 +716,22 @@ router.patch('/invoices/:invoiceId/mark-paid', async (req: Request, res: Respons
       `, [inv.plan.toUpperCase(), quota, inv.workspace_id]);
     }
 
+    await recordSecurityAudit({
+      actorType: 'FOUNDER',
+      actorName: (req as any).user?.displayName || 'Founder SuperAdmin',
+      eventType: 'billing.manual_settled',
+      summary: `Founder memverifikasi pembayaran manual faktur #${inv.invoice_number || invoiceId} sebesar Rp ${inv.amount_idr} untuk workspace ${inv.workspace_id}.`,
+      targetType: 'INVOICE',
+      targetId: invoiceId,
+      workspaceId: inv.workspace_id
+    });
+
     res.json({
       success: true,
       message: `Faktur #${invoiceId} telah diselesaikan secara manual dan status langganan tenant diaktifkan.`
     });
   } catch (err: any) {
-    res.status(500).json({ error: { message: err.message } });
+    res.status(500).json({ error: { message: 'Gagal menyelesaikan faktur secara manual.' } });
   }
 });
 
@@ -961,16 +1010,38 @@ router.patch('/platform-settings', (req: Request, res: Response) => {
 });
 
 // POST /api/founder/kill-switch/revoke-all-sessions
-router.post('/kill-switch/revoke-all-sessions', async (_req: Request, res: Response) => {
+router.post('/kill-switch/revoke-all-sessions', sensitiveOpsRateLimiter, async (req: Request, res: Response) => {
   try {
+    const candidatePin = req.headers['x-founder-pin'] || req.body?.founderPin;
+    if (!candidatePin || !verifyFounderMasterPin(String(candidatePin))) {
+      await recordSecurityAudit({
+        actorType: 'SECURITY',
+        actorName: (req as any).user?.displayName || 'Founder SuperAdmin',
+        eventType: 'kill_switch.pin_rejected',
+        summary: `Percobaan eksekusi Kill-Switch dicabut sesi dibatalkan: Master PIN salah atau belum diisi dari IP ${(req.ip || 'unknown')}.`
+      });
+
+      return res.status(403).json({
+        error: { message: 'Master Security PIN (6-digit) diperlukan dan harus valid untuk menjalankan protokol darurat.' }
+      });
+    }
+
     // Revoke all session tokens except for founder accounts
-    await pool.query("UPDATE human_users SET session_token = NULL WHERE role != 'ADMIN';");
+    const updateRes = await pool.query("UPDATE human_users SET session_token = NULL WHERE role != 'ADMIN';");
+
+    await recordSecurityAudit({
+      actorType: 'FOUNDER',
+      actorName: (req as any).user?.displayName || 'Founder SuperAdmin',
+      eventType: 'kill_switch.sessions_revoked',
+      summary: `Protokol Keamanan Darurat Dieksekusi: ${updateRes.rowCount} sesi operator non-founder dicabut dari IP ${(req.ip || 'unknown')}.`
+    });
+
     res.json({
       success: true,
-      message: 'Seluruh sesi aktif operator non-founder telah dicabut demi protokol keamanan darurat.'
+      message: `Protokol darurat berhasil dieksekusi: ${updateRes.rowCount} sesi operator non-founder telah dicabut secara paksa demi keamanan.`
     });
   } catch (err: any) {
-    res.status(500).json({ error: { message: err.message } });
+    res.status(500).json({ error: { message: 'Gagal mengeksekusi protokol darurat.' } });
   }
 });
 

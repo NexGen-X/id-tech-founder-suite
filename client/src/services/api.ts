@@ -120,10 +120,11 @@ export const api = {
     });
   },
 
-  async resetUserPassword(userId: string, newPassword?: string) {
+  async resetUserPassword(userId: string, newPassword?: string, founderPin?: string) {
     return this.request(`/api/founder/users/${userId}/reset-password`, {
       method: 'POST',
-      body: JSON.stringify({ newPassword })
+      headers: founderPin ? { 'x-founder-pin': founderPin } : {},
+      body: JSON.stringify({ newPassword, founderPin })
     });
   },
 
@@ -181,9 +182,11 @@ export const api = {
     });
   },
 
-  async emergencyRevokeSessions() {
+  async emergencyRevokeSessions(founderPin?: string) {
     return this.request('/api/founder/kill-switch/revoke-all-sessions', {
-      method: 'POST'
+      method: 'POST',
+      headers: founderPin ? { 'x-founder-pin': founderPin } : {},
+      body: JSON.stringify({ founderPin })
     });
   },
 
