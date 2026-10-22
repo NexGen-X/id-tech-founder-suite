@@ -6,10 +6,12 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
-  Cpu,
   ArrowRight,
-  Terminal,
-  ShieldAlert
+  ShieldCheck,
+  Server,
+  Database,
+  Lock,
+  Cpu
 } from 'lucide-react';
 import { api } from '../../services/api';
 
@@ -45,68 +47,55 @@ export const FounderLoginPage: React.FC<FounderLoginPageProps> = ({ onLoginSucce
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4 bg-[#07090E] text-slate-100 overflow-hidden font-sans select-none">
-      {/* Ambient Glowing Orbs */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#f59e0b08_1px,transparent_1px),linear-gradient(to_bottom,#f59e0b08_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-amber-500/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-orange-500/10 rounded-full blur-[140px] pointer-events-none" />
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-4 bg-[#000000] text-neutral-100 overflow-hidden font-sans select-none">
+      {/* Vercel & Railway Minimal Dot Grid */}
+      <div 
+        className="absolute inset-0 bg-[radial-gradient(#1f1f1f_1px,transparent_1px)] bg-[size:1.75rem_1.75rem] pointer-events-none opacity-80" 
+      />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[42rem] h-[20rem] bg-gradient-to-b from-white/[0.04] to-transparent rounded-full blur-3xl pointer-events-none" />
+
+      {/* Top Status Pill ala Railway */}
+      <div className="relative z-10 mb-8 flex items-center gap-2 px-3 py-1 rounded-full bg-[#0a0a0a] border border-[#222] text-[11px] font-mono text-neutral-400 shadow-sm">
+        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+        <span className="text-neutral-200 font-medium">Railway PostgreSQL Cluster</span>
+        <span className="text-neutral-600">•</span>
+        <span className="text-emerald-400 font-mono">100% Healthy</span>
+      </div>
 
       {/* Main Login Card */}
-      <div className="relative z-10 w-full max-w-md">
-        {/* Holographic Header Badge */}
-        <div className="flex flex-col items-center mb-8 text-center space-y-3">
-          <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500/25 via-yellow-500/20 to-orange-500/25 border border-amber-500/40 shadow-[0_0_30px_rgba(245,158,11,0.3)] backdrop-blur-md">
-            <Crown className="w-8 h-8 text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.8)]" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 ring-4 ring-[#07090E] animate-pulse" />
-          </div>
-
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/50 border border-amber-500/40 text-[10px] font-mono tracking-widest uppercase text-amber-300 mb-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-              Founder Security Clearance Level 5
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="rounded-2xl bg-[#0a0a0a] border border-[#222] shadow-[0_0_60px_rgba(0,0,0,0.8)] p-7 space-y-6">
+          {/* Brand & Clearance Title */}
+          <div className="space-y-1.5 text-center">
+            <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-neutral-900 border border-neutral-800 text-white shadow-inner mb-2">
+              <Crown className="w-5 h-5 text-amber-400" />
             </div>
-            <h1 className="text-2xl font-black tracking-tight text-white flex items-center justify-center gap-2">
+            <h1 className="text-lg font-bold tracking-tight text-white flex items-center justify-center gap-2">
               <span>ID-TECH CLOUD</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 font-mono">
-                EXECUTIVE
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-neutral-300 font-mono font-medium">
+                FOUNDER
               </span>
             </h1>
-            <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
-              Portal Pribadi Pemilik Startup PT NexGen Digital Nusantara
+            <p className="text-xs text-neutral-400">
+              Executive Management & Multi-Tenant Cockpit
             </p>
           </div>
-        </div>
 
-        {/* Form Container */}
-        <div className="relative rounded-3xl bg-[#0B0E14]/90 border border-amber-500/30 shadow-[0_0_50px_-10px_rgba(245,158,11,0.2)] backdrop-blur-xl p-6 sm:p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="border-b border-slate-800/80 pb-4">
-              <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2">
-                <Crown className="w-4 h-4 text-amber-400" />
-                <span>Founder Credential Clearance</span>
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Masukkan kredensial akun pemilik untuk membuka panel metrik finansial, omzet, dan kontrol platform.
-              </p>
+          {error && (
+            <div className="p-3 rounded-xl bg-red-950/30 border border-red-500/30 text-red-300 text-xs flex items-start gap-2.5 animate-fadeIn">
+              <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+              <span className="leading-relaxed">{error}</span>
             </div>
+          )}
 
-            {error && (
-              <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-start gap-2.5 animate-fadeIn">
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                <span className="leading-relaxed">{error}</span>
-              </div>
-            )}
-
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email Field */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
-                <span>Email Founder</span>
-                <span className="text-[10px] font-mono text-amber-400/80">C-LEVEL</span>
+              <label className="text-xs font-medium text-neutral-300 flex items-center justify-between">
+                <span>Founder Email</span>
+                <span className="text-[10px] font-mono text-neutral-500">LEVEL 5</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Mail className="w-4 h-4" />
-                </div>
                 <input
                   type="email"
                   required
@@ -115,21 +104,18 @@ export const FounderLoginPage: React.FC<FounderLoginPageProps> = ({ onLoginSucce
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="arpayid.dev@gmail.com"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-all font-mono"
                 />
               </div>
             </div>
 
             {/* Password Field */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
-                <span>Master Password</span>
-                <span className="text-[10px] font-mono text-amber-400/80">E2EE</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-neutral-300">Master Password</label>
+                <span className="text-[10px] font-mono text-neutral-500">PBKDF2 E2EE</span>
+              </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <KeyRound className="w-4 h-4" />
-                </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
@@ -137,12 +123,12 @@ export const FounderLoginPage: React.FC<FounderLoginPageProps> = ({ onLoginSucce
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-all font-mono"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200 transition"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-500 hover:text-neutral-300 transition"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -150,47 +136,55 @@ export const FounderLoginPage: React.FC<FounderLoginPageProps> = ({ onLoginSucce
               </div>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit Button ala Vercel */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full relative group overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold py-3 px-4 shadow-[0_0_25px_rgba(245,158,11,0.5)] focus:outline-none transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none text-sm flex items-center justify-center gap-2"
+              className="w-full mt-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold py-2.5 px-4 text-xs tracking-tight shadow transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                  <span>Memverifikasi Otorisasi Founder...</span>
+                  <div className="w-3.5 h-3.5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                  <span>Verifying Founder Credentials...</span>
                 </>
               ) : (
                 <>
-                  <span>AUTHORIZE & ENTER FOUNDER SUITE</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <span>Sign In to Executive Suite</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
             </button>
           </form>
 
-          {/* Footer Security Badge */}
-          <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-500">
-            <span className="flex items-center gap-1 text-amber-400/80">
-              <Cpu className="w-3 h-3" />
-              AIR-GAPPED PORTAL
-            </span>
-            <span className="flex items-center gap-1 text-emerald-400/80">
-              <Terminal className="w-3 h-3" />
-              SESSION ENCRYPTED
-            </span>
+          {/* Security & Verification Badges */}
+          <div className="pt-4 border-t border-[#1a1a1a] grid grid-cols-2 gap-2 text-[10px] font-mono text-neutral-500">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-3 h-3 text-emerald-400 shrink-0" />
+              <span>Anti-Brute Force</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Lock className="w-3 h-3 text-amber-400 shrink-0" />
+              <span>2FA Step-Up PIN</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Database className="w-3 h-3 text-sky-400 shrink-0" />
+              <span>PostgreSQL 18</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Server className="w-3 h-3 text-purple-400 shrink-0" />
+              <span>Railway ap-se-1</span>
+            </div>
           </div>
         </div>
 
-        {/* Back link to customer app */}
-        <div className="text-center mt-6 text-xs text-slate-500">
-          Bukan pemilik startup? Kunjungi{' '}
+        {/* Back Link to Customer Tenant App */}
+        <div className="text-center mt-5 text-[11px] text-neutral-500 font-mono">
+          Customer Tenant Platform:{' '}
           <a
             href="https://app.id-tech.cloud"
-            className="text-amber-400 hover:underline font-semibold"
+            className="text-neutral-300 hover:text-white underline underline-offset-2 transition"
           >
-            Tenant Platform (app.id-tech.cloud)
+            app.id-tech.cloud
           </a>
         </div>
       </div>

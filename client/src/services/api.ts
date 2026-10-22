@@ -190,6 +190,23 @@ export const api = {
     });
   },
 
+  // Railway PostgreSQL Engine & Query Runner
+  async getDatabaseStats() {
+    return this.request('/api/founder/database-stats');
+  },
+
+  async runDatabaseQuery(query: string) {
+    return this.request('/api/founder/database-query', {
+      method: 'POST',
+      body: JSON.stringify({ query })
+    });
+  },
+
+  // Git CI/CD & Deployments Telemetry
+  async getDeployments() {
+    return this.request('/api/founder/deployments');
+  },
+
   // Download Export CSV Helper
   getExportUrl(type: 'users' | 'invoices' | 'workspaces' | 'audit-logs'): string {
     const token = this.getToken();
