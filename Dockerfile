@@ -3,7 +3,7 @@
 # Air-gapped Standalone C-Level Operations & Governance
 # ==============================================================
 
-FROM node:20-bookworm-slim AS builder
+FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 
 # Copy dependency manifests
@@ -25,7 +25,7 @@ RUN npm run build -w client
 # --------------------------------------------------------------
 # Production Runtime Container
 # --------------------------------------------------------------
-FROM node:20-bookworm-slim AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
