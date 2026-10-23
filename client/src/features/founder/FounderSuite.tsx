@@ -2447,9 +2447,9 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
         </div>
       )}
 
-      {/* Global Interactive Toast Notification */}
+      {/* Global Interactive Toast Notification - Positioned above mobile dock (bottom-20) */}
       {toastMessage && (
-        <div className="fixed bottom-16 sm:bottom-6 right-4 sm:right-6 z-50 px-4 py-3 rounded-2xl bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-white/20 shadow-[0_10px_40px_rgba(0,0,0,0.2)] dark:shadow-[0_0_40px_rgba(0,0,0,0.9)] text-neutral-900 dark:text-white text-xs font-semibold flex items-center gap-2.5 animate-fadeIn">
+        <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[60] px-4 py-3 rounded-2xl bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-white/20 shadow-[0_10px_40px_rgba(0,0,0,0.2)] dark:shadow-[0_0_40px_rgba(0,0,0,0.9)] text-neutral-900 dark:text-white text-xs font-semibold flex items-center gap-2.5 animate-fadeIn">
           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
           <span>{toastMessage}</span>
         </div>
