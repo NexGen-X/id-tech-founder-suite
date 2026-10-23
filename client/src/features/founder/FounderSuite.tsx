@@ -2133,8 +2133,9 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
       {/* MODAL: CREATE WORKSPACE */}
       {/* ========================================================= */}
       {isCreateWsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-[#262626] p-6 space-y-5 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-[#262626] p-6 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-6">
+            <div className="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-700 rounded-full mx-auto my-1 sm:hidden shrink-0" />
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-[#1f1f1f] pb-3">
               <div className="flex items-center gap-2 text-neutral-900 dark:text-white">
                 <Building2 className="w-5 h-5 text-sky-500" />
@@ -2226,8 +2227,9 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
       {/* MODAL: EDIT WORKSPACE */}
       {/* ========================================================= */}
       {editingWorkspace && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-[#262626] p-6 space-y-5 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-[#262626] p-6 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-6">
+            <div className="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-700 rounded-full mx-auto my-1 sm:hidden shrink-0" />
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-[#1f1f1f] pb-3">
               <div className="flex items-center gap-2 text-neutral-900 dark:text-white">
                 <Building2 className="w-5 h-5 text-sky-500" />
@@ -2311,8 +2313,9 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
       {/* MODAL: RESET PASSWORD WITH STEP-UP MASTER PIN */}
       {/* ========================================================= */}
       {resettingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#0a0a0a] border border-amber-500/40 p-6 space-y-5 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-[#0a0a0a] border border-amber-500/40 p-6 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-6">
+            <div className="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-700 rounded-full mx-auto my-1 sm:hidden shrink-0" />
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-[#1f1f1f] pb-3">
               <div className="flex items-center gap-2 text-amber-500 dark:text-amber-400">
                 <KeyRound className="w-5 h-5" />
@@ -2386,8 +2389,9 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
       {/* MODAL: EMERGENCY KILL-SWITCH SESSIONS REVOCATION */}
       {/* ========================================================= */}
       {isEmergencyModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#0a0a0a] border border-red-500/60 p-6 space-y-5 shadow-[0_0_50px_rgba(239,68,68,0.3)]">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-[#0a0a0a] border border-red-500/60 p-6 space-y-5 shadow-[0_0_50px_rgba(239,68,68,0.3)] max-h-[90vh] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-6">
+            <div className="w-12 h-1.5 bg-red-400/80 rounded-full mx-auto my-1 sm:hidden shrink-0" />
             <div className="flex items-center justify-between border-b border-red-500/20 pb-3">
               <div className="flex items-center gap-2 text-red-500 dark:text-red-400">
                 <ShieldAlert className="w-5 h-5 animate-pulse" />

@@ -369,7 +369,7 @@ export const CustomDomainsTab: React.FC<CustomDomainsTabProps> = ({
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center flex-wrap gap-2">
                       <a
                         href={`https://${d.domainName}`}
                         target="_blank"
@@ -507,8 +507,11 @@ export const CustomDomainsTab: React.FC<CustomDomainsTabProps> = ({
       {/* MODAL: ALOKASIKAN CUSTOM DOMAIN BARU */}
       {/* ========================================================= */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-[#0c0c0c] border border-neutral-200 dark:border-[#222] shadow-2xl overflow-hidden animate-scaleIn">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
+          <div className="w-full max-w-lg rounded-t-3xl sm:rounded-2xl bg-white dark:bg-[#0c0c0c] border border-neutral-200 dark:border-[#222] shadow-2xl overflow-hidden animate-scaleIn max-h-[92vh] flex flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:pb-0">
+            {/* Mobile Swipe Handle */}
+            <div className="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-700 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
+
             <div className="p-5 border-b border-neutral-200 dark:border-[#222] flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white">

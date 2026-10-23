@@ -468,7 +468,7 @@ export const SreSupervisorTab: React.FC<SreSupervisorTabProps> = ({
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center flex-wrap gap-2">
                       <span className="text-sm font-bold text-neutral-900 dark:text-white">
                         {svc.displayName}
                       </span>
@@ -485,7 +485,7 @@ export const SreSupervisorTab: React.FC<SreSupervisorTabProps> = ({
                   </div>
 
                   {/* Actions & Status */}
-                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <div className="flex items-center flex-wrap gap-2 self-start sm:self-auto">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-semibold flex items-center gap-1.5 ${
                       isActive 
                         ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
@@ -554,8 +554,11 @@ export const SreSupervisorTab: React.FC<SreSupervisorTabProps> = ({
       {/* MODAL: LIVE TERMINAL SERVICE LOGS VIEWER */}
       {/* ========================================================= */}
       {activeLogService && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-3xl rounded-2xl bg-[#0a0a0a] border border-[#222] shadow-2xl overflow-hidden flex flex-col h-[75vh] animate-scaleIn">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
+          <div className="w-full max-w-3xl rounded-t-3xl sm:rounded-2xl bg-[#0a0a0a] border border-[#222] shadow-2xl overflow-hidden flex flex-col h-[85vh] sm:h-[75vh] animate-scaleIn pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:pb-0">
+            {/* Mobile Swipe Handle */}
+            <div className="w-12 h-1.5 bg-neutral-700/80 rounded-full mx-auto my-2 sm:hidden shrink-0" />
+
             {/* Terminal Header */}
             <div className="p-4 border-b border-[#222] flex items-center justify-between bg-[#0e0e0e]">
               <div className="flex items-center gap-2">
