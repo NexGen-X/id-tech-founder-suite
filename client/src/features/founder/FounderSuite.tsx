@@ -1959,7 +1959,7 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
       {/* MOBILE FLOATING DOCKED BOTTOM NAVIGATION BAR (<768px) */}
       {/* ========================================================= */}
       {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-lg border-t border-neutral-200 dark:border-[#222] px-2 py-1.5 flex items-center justify-around shadow-2xl">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-lg border-t border-neutral-200 dark:border-[#222] px-2 pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom))] flex items-center justify-around shadow-2xl">
           {[
             { id: 'cockpit' as SuiteTab, label: 'Overview', icon: TrendingUp },
             { id: 'tenants' as SuiteTab, label: 'Workspaces', icon: Building2 },
