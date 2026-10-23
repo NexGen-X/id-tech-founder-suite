@@ -1,36 +1,42 @@
 @import "tailwindcss";
 
 @theme {
-  --color-titanium-950: #07090E;
-  --color-titanium-900: #0B0E14;
-  --color-titanium-800: #141822;
-  --color-titanium-700: #1F2533;
+  --color-titanium-950: #000000;
+  --color-titanium-900: #09090b;
+  --color-titanium-800: #121214;
+  --color-titanium-700: #1c1c1f;
 }
 
 :root {
   --bg-primary: #000000;
-  --bg-card: #0A0A0A;
-  --border-color: #1F1F1F;
+  --bg-card: #09090b;
+  --border-color: #27272a;
   --text-primary: #FFFFFF;
-  --text-muted: #888888;
+  --text-muted: #a1a1aa;
   --accent-color: #10B981;
 }
 
 html.light {
-  --bg-primary: #F8FAFC;
-  --bg-card: #FFFFFF;
-  --border-color: #E2E8F0;
+  --bg-primary: #ffffff;
+  --bg-card: #f4f4f5;
+  --border-color: #e4e4e7;
   --text-primary: #09090B;
-  --text-muted: #64748B;
+  --text-muted: #71717a;
 }
 
 body {
   margin: 0;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Plus Jakarta Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html.light body {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
 }
 
 /* Custom Scrollbar */
@@ -44,12 +50,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(120, 120, 120, 0.25);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(120, 120, 120, 0.45);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -61,10 +67,10 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
