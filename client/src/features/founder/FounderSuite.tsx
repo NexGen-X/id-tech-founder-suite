@@ -615,13 +615,15 @@ export const FounderSuite: React.FC<FounderSuiteProps> = ({ currentUser, onLogou
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#000000] text-neutral-900 dark:text-neutral-100 flex flex-col font-sans select-none antialiased transition-colors duration-200">
-      {/* Vercel / Railway Minimal Dot Matrix Background */}
-      <div className="fixed inset-0 bg-[radial-gradient(#d4d4d8_1px,transparent_1px)] dark:bg-[radial-gradient(#1f1f1f_1px,transparent_1px)] bg-[size:1.75rem_1.75rem] pointer-events-none opacity-80" />
-      <div 
-        className="fixed top-0 left-1/2 -translate-x-1/2 w-[50rem] h-[15rem] rounded-full blur-3xl pointer-events-none opacity-30" 
-        style={{ background: `radial-gradient(ellipse at top, ${accent.hex}30, transparent 70%)` }}
-      />
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#000000] text-neutral-100 flex flex-col font-sans select-none antialiased relative">
+      {/* Vercel / Railway Pitch-Black Charcoal Dot Matrix Background (Contained strictly to viewport) */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(#1f1f1f_1px,transparent_1px)] bg-[size:1.75rem_1.75rem] opacity-80" />
+        <div 
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[min(50rem,100vw)] h-[15rem] rounded-full blur-3xl opacity-30" 
+          style={{ background: `radial-gradient(ellipse at top, ${accent.hex}30, transparent 70%)` }}
+        />
+      </div>
 
       {/* ========================================================= */}
       {/* GLOBAL TOPBAR & PROJECT SELECTOR */}
